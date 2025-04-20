@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern PhotoBooth App</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #ec4899;
+      --dark: #111827;
+      --light: #f9fafb;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+      color: var(--light);
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 800px;
+    }
+    
+    header {
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(to right, #fff, #d1d5db);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle {
+      font-size: 16px;
+      opacity: 0.8;
+    }
+    
+    .camera-container {
+      position: relative;
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      background-color: rgba(0, 0, 0, 0.2);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    #video {
+      width: 100%;
+      display: block;
+      transform: scaleX(-1); /* Mirror effect */
+    }
+    
+    .countdown {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 120px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    
+    button {
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    button:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    button svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 32px;
+    }
+    
+    .photo-container {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      aspect-ratio: 4/3;
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+    
+    .photo-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* Mirror effect consistent with video */
+    }
+    
+    .photo-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: white;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    
+    @media (max-width: 640px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📸 Modern PhotoBooth</h1>
+      <p class="subtitle">Take a sequence of 3 photos and download them</p>
+    </header>
+    
+    <div class="camera-container">
+      <video id="video" autoplay playsinline></video>
+      <div id="countdown" class="countdown"></div>
+    </div>
+    
+    <div class="controls">
+      <button id="startBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        Take Photos
+      </button>
+      
+      <button id="downloadAllBtn" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Download All
+      </button>
+      
+      <button id="resetBtn" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Reset
+      </button>
+    </div>
+    
+    <div class="gallery">
+      <div class="photo-container">
+        <div class="photo-placeholder" id="placeholder1">Photo 1</div>
+        <img id="photo1" class="hidden" alt="Photo 1">
+      </div>
+      <div class="photo-container">
+        <div class="photo-placeholder" id="placeholder2">Photo 2</div>
+        <img id="photo2" class="hidden" alt="Photo 2">
+      </div>
+      <div class="photo-container">
+        <div class="photo-placeholder" id="placeholder3">Photo 3</div>
+        <img id="photo3" class="hidden" alt="Photo 3">
+      </div>
+    </div>
+  </div>
+  
+  <canvas id="canvas" width="640" height="480" class="hidden"></canvas>
+  <canvas id="collageCanvas" width="1200" height="480" class="hidden"></canvas>
+  <div class="flash" id="flash"></div>
+  
+  <script>
+    // DOM Elements
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const collageCanvas = document.getElementById('collageCanvas');
+    const ctx = canvas.getContext('2d');
+    const collageCtx = collageCanvas.getContext('2d');
+    const startBtn = document.getElementById('startBtn');
+    const downloadAllBtn = document.getElementById('downloadAllBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const countdownEl = document.getElementById('countdown');
+    const flashEl = document.getElementById('flash');
+    
+    // Photo elements
+    const photoElements = [
+      document.getElementById('photo1'),
+      document.getElementById('photo2'),
+      document.getElementById('photo3')
+    ];
+    
+    // Placeholder elements
+    const placeholderElements = [
+      document.getElementById('placeholder1'),
+      document.getElementById('placeholder2'),
+      document.getElementById('placeholder3')
+    ];
+    
+    // State variables
+    let photoCount = 0;
+    let photoURLs = [null, null, null];
+    let stream = null;
+    
+    // Initialize camera
+    async function initCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'user',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          } 
+        });
+        video.srcObject = stream;
+        
+        // Set canvas size to match video
+        video.onloadedmetadata = () => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          
+          // Adjust aspect ratio for collage
+          collageCanvas.width = video.videoWidth * 3;
+          collageCanvas.height = video.videoHeight;
+        };
+      } catch (err) {
+        alert('Camera access is required. Please allow access to your camera.');
+        console.error('Error accessing camera:', err);
+      }
+    }
+    
+    // Flash animation
+    function triggerFlash() {
+      flashEl.style.opacity = '0.8';
+      setTimeout(() => {
+        flashEl.style.opacity = '0';
+      }, 100);
+    }
+    
+    // Countdown animation
+    function startCountdown(seconds) {
+      return new Promise((resolve) => {
+        countdownEl.style.opacity = '1';
+        let count = seconds;
+        
+        const countInterval = setInterval(() => {
+          countdownEl.textContent = count;
+          count--;
+          
+          if (count < 0) {
+            clearInterval(countInterval);
+            countdownEl.style.opacity = '0';
+            resolve();
+          }
+        }, 1000);
+        
+        countdownEl.textContent = count;
+      });
+    }
+    
+    // Take a photo
+    function takePhoto() {
+      return new Promise((resolve) => {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        triggerFlash();
+        
+        // Create image URL
+        const imageURL = canvas.toDataURL('image/jpeg', 0.9);
+        
+        // Display in photo container
+        photoElements[photoCount].src = imageURL;
+        photoElements[photoCount].classList.remove('hidden');
+        placeholderElements[photoCount].classList.add('hidden');
+        
+        // Store URL
+        photoURLs[photoCount] = imageURL;
+        photoCount++;
+        
+        // Add slight delay
+        setTimeout(resolve, 300);
+      });
+    }
+    
+    // Create collage
+    function createCollage() {
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      collageCtx.fillStyle = '#111827';
+      collageCtx.fillRect(0, 0, collageCanvas.width, collageCanvas.height);
+      
+      // Draw each photo
+      for (let i = 0; i < 3; i++) {
+        const img = new Image();
+        img.src = photoURLs[i];
+        collageCtx.drawImage(img, i * width, 0, width, height);
+      }
+      
+      // Add watermark
+      collageCtx.font = '16px Inter, sans-serif';
+      collageCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      collageCtx.fillText('Modern PhotoBooth • ' + new Date().toLocaleDateString(), 10, height - 20);
+      
+      return collageCanvas.toDataURL('image/jpeg', 0.9);
+    }
+    
+    // Download individual photo
+    function downloadPhoto(index) {
+      const link = document.createElement('a');
+      link.href = photoURLs[index];
+      link.download = `photo_${index + 1}.jpg`;
+      link.click();
+    }
+    
+    // Download all photos as collage
+    function downloadAllPhotos() {
+      const collageURL = createCollage();
+      const link = document.createElement('a');
+      link.href = collageURL;
+      link.download = 'photo_collage.jpg';
+      link.click();
+    }
+    
+    // Reset the app
+    function resetApp() {
+      photoCount = 0;
+      photoURLs = [null, null, null];
+      
+      for (let i = 0; i < 3; i++) {
+        photoElements[i].classList.add('hidden');
+        placeholderElements[i].classList.remove('hidden');
+      }
+      
+      downloadAllBtn.disabled = true;
+      resetBtn.disabled = true;
+      startBtn.disabled = false;
+    }
+    
+    // Start photo session
+    async function startPhotoSession() {
+      startBtn.disabled = true;
+      
+      // Take 3 photos with countdown
+      for (let i = 0; i < 3; i++) {
+        await startCountdown(3);
+        await takePhoto();
+      }
+      
+      // Enable buttons
+      downloadAllBtn.disabled = false;
+      resetBtn.disabled = false;
+    }
+    
+    // Add click listeners to photos for individual download
+    photoElements.forEach((photo, index) => {
+      photo.addEventListener('click', () => {
+        if (photoURLs[index]) {
+          downloadPhoto(index);
+        }
+      });
+    });
+    
+    // Event listeners
+    startBtn.addEventListener('click', startPhotoSession);
+    downloadAllBtn.addEventListener('click', downloadAllPhotos);
+    resetBtn.addEventListener('click', resetApp);
+    
+    // Initialize app
+    initCamera();
+  </script>
+</body>
+</html>
