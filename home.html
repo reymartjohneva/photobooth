@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Modern PhotoBooth App</title>
+  <title>PhotoLoBooth</title>
   <style>
     :root {
-      --primary: #6366f1;
-      --secondary: #ec4899;
+      --primary: #4b5563;
+      --secondary: #6b7280;
       --dark: #111827;
       --light: #f9fafb;
+      --paper: #ffffff;
+      --paper-shadow: rgba(0, 0, 0, 0.1);
     }
     
     * {
@@ -133,9 +135,25 @@
       position: relative;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      aspect-ratio: 4/3;
-      background-color: rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      aspect-ratio: 4/5;
+      background-color: var(--paper);
+      padding: 12px;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .photo-container:hover {
+      transform: translateY(-5px) rotate(1deg);
+    }
+    
+    .photo-frame {
+      position: relative;
+      width: 100%;
+      height: 80%;
+      overflow: hidden;
+      border: 8px solid white;
+      box-shadow: 0 4px 6px var(--paper-shadow);
     }
     
     .photo-container img {
@@ -145,15 +163,67 @@
       transform: scaleX(-1); /* Mirror effect consistent with video */
     }
     
+    .photo-info {
+      margin-top: 10px;
+      text-align: center;
+      color: var(--dark);
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+    }
+    
     .photo-placeholder {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
       height: 100%;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.6);
+      background-color: rgba(0, 0, 0, 0.05);
+      color: rgba(0, 0, 0, 0.4);
       font-size: 14px;
+    }
+    
+    .photo-decoration {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      font-size: 20px;
+      opacity: 0.5;
+    }
+    
+    .template-selector {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .template-option {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .template-option.active {
+      border-color: white;
+      transform: scale(1.1);
+    }
+    
+    .template-option:hover {
+      transform: scale(1.05);
+    }
+    
+    .template-preview {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      background-size: cover;
     }
     
     .hidden {
@@ -170,6 +240,25 @@
       opacity: 0;
       pointer-events: none;
       z-index: 9999;
+    }
+    
+    /* Template styles */
+    .template-classic {
+      background-color: #f8f5e7;
+    }
+    
+    .template-vintage {
+      background-color: #e0d4b8;
+    }
+    
+    .template-polaroid {
+      background-color: #ffffff;
+      padding-bottom: 40px;
+    }
+    
+    .template-modern {
+      background-color: #2d3748;
+      color: white;
     }
     
     @media (max-width: 640px) {
@@ -195,9 +284,24 @@
 <body>
   <div class="container">
     <header>
-      <h1>📸 Modern PhotoBooth</h1>
-      <p class="subtitle">Take a sequence of 3 photos and download them</p>
+      <h1>📸 PhotoLoBooth</h1>
+      <p class="subtitle">Take a sequence of 3 photos with stylish templates</p>
     </header>
+    
+    <div class="template-selector">
+      <div class="template-option active" data-template="classic">
+        <div class="template-preview" style="background-color: #f8f5e7;"></div>
+      </div>
+      <div class="template-option" data-template="vintage">
+        <div class="template-preview" style="background-color: #e0d4b8;"></div>
+      </div>
+      <div class="template-option" data-template="polaroid">
+        <div class="template-preview" style="background-color: #ffffff;"></div>
+      </div>
+      <div class="template-option" data-template="modern">
+        <div class="template-preview" style="background-color: #2d3748;"></div>
+      </div>
+    </div>
     
     <div class="camera-container">
       <video id="video" autoplay playsinline></video>
@@ -229,23 +333,35 @@
     </div>
     
     <div class="gallery">
-      <div class="photo-container">
-        <div class="photo-placeholder" id="placeholder1">Photo 1</div>
-        <img id="photo1" class="hidden" alt="Photo 1">
+      <div class="photo-container template-classic">
+        <div class="photo-frame">
+          <div class="photo-placeholder" id="placeholder1">Photo 1</div>
+          <img id="photo1" class="hidden" alt="Photo 1">
+        </div>
+        <div class="photo-info" id="photoInfo1">04.21.2025</div>
+        <div class="photo-decoration">✨</div>
       </div>
-      <div class="photo-container">
-        <div class="photo-placeholder" id="placeholder2">Photo 2</div>
-        <img id="photo2" class="hidden" alt="Photo 2">
+      <div class="photo-container template-classic">
+        <div class="photo-frame">
+          <div class="photo-placeholder" id="placeholder2">Photo 2</div>
+          <img id="photo2" class="hidden" alt="Photo 2">
+        </div>
+        <div class="photo-info" id="photoInfo2">04.21.2025</div>
+        <div class="photo-decoration">✨</div>
       </div>
-      <div class="photo-container">
-        <div class="photo-placeholder" id="placeholder3">Photo 3</div>
-        <img id="photo3" class="hidden" alt="Photo 3">
+      <div class="photo-container template-classic">
+        <div class="photo-frame">
+          <div class="photo-placeholder" id="placeholder3">Photo 3</div>
+          <img id="photo3" class="hidden" alt="Photo 3">
+        </div>
+        <div class="photo-info" id="photoInfo3">04.21.2025</div>
+        <div class="photo-decoration">✨</div>
       </div>
     </div>
   </div>
   
   <canvas id="canvas" width="640" height="480" class="hidden"></canvas>
-  <canvas id="collageCanvas" width="1200" height="480" class="hidden"></canvas>
+  <canvas id="collageCanvas" width="1200" height="600" class="hidden"></canvas>
   <div class="flash" id="flash"></div>
   
   <script>
@@ -260,6 +376,7 @@
     const resetBtn = document.getElementById('resetBtn');
     const countdownEl = document.getElementById('countdown');
     const flashEl = document.getElementById('flash');
+    const templateOptions = document.querySelectorAll('.template-option');
     
     // Photo elements
     const photoElements = [
@@ -275,10 +392,30 @@
       document.getElementById('placeholder3')
     ];
     
+    // Photo info elements
+    const photoInfoElements = [
+      document.getElementById('photoInfo1'),
+      document.getElementById('photoInfo2'),
+      document.getElementById('photoInfo3')
+    ];
+    
+    // Photo containers
+    const photoContainers = document.querySelectorAll('.photo-container');
+    
     // State variables
     let photoCount = 0;
     let photoURLs = [null, null, null];
     let stream = null;
+    let selectedTemplate = 'classic';
+    let photoTemplates = ['classic', 'classic', 'classic'];
+    
+    // Template decoration options
+    const templateDecorations = {
+      'classic': '✨',
+      'vintage': '📷',
+      'polaroid': '📎',
+      'modern': '🔳'
+    };
     
     // Initialize camera
     async function initCamera() {
@@ -299,7 +436,7 @@
           
           // Adjust aspect ratio for collage
           collageCanvas.width = video.videoWidth * 3;
-          collageCanvas.height = video.videoHeight;
+          collageCanvas.height = video.videoHeight + 150; // Extra space for template decorations
         };
       } catch (err) {
         alert('Camera access is required. Please allow access to your camera.');
@@ -336,6 +473,22 @@
       });
     }
     
+    // Apply template to photo container
+    function applyTemplate(index, template) {
+      // Remove all template classes
+      photoContainers[index].classList.remove('template-classic', 'template-vintage', 'template-polaroid', 'template-modern');
+      
+      // Add selected template class
+      photoContainers[index].classList.add(`template-${template}`);
+      
+      // Update decoration
+      const decorationEl = photoContainers[index].querySelector('.photo-decoration');
+      decorationEl.textContent = templateDecorations[template];
+      
+      // Store template selection
+      photoTemplates[index] = template;
+    }
+    
     // Take a photo
     function takePhoto() {
       return new Promise((resolve) => {
@@ -350,6 +503,13 @@
         photoElements[photoCount].classList.remove('hidden');
         placeholderElements[photoCount].classList.add('hidden');
         
+        // Apply current template
+        applyTemplate(photoCount, selectedTemplate);
+        
+        // Update photo info with current date and time
+        const now = new Date();
+        photoInfoElements[photoCount].textContent = `${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        
         // Store URL
         photoURLs[photoCount] = imageURL;
         photoCount++;
@@ -359,34 +519,105 @@
       });
     }
     
-    // Create collage
+    // Create collage with templates
     function createCollage() {
       const width = canvas.width;
       const height = canvas.height;
+      const templateHeight = 150;
       
+      // Set background
       collageCtx.fillStyle = '#111827';
       collageCtx.fillRect(0, 0, collageCanvas.width, collageCanvas.height);
       
-      // Draw each photo
+      // Draw each photo with its template
       for (let i = 0; i < 3; i++) {
+        // Template background
+        const templateColor = getTemplateColor(photoTemplates[i]);
+        collageCtx.fillStyle = templateColor;
+        collageCtx.fillRect(i * width, 0, width, height + templateHeight);
+        
+        // White border for photo
+        collageCtx.fillStyle = '#ffffff';
+        collageCtx.fillRect(i * width + 20, 20, width - 40, height - 40);
+        
+        // The photo
         const img = new Image();
         img.src = photoURLs[i];
-        collageCtx.drawImage(img, i * width, 0, width, height);
+        collageCtx.drawImage(img, i * width + 25, 25, width - 50, height - 50);
+        
+        // Photo info
+        collageCtx.font = '16px "Courier New", monospace';
+        collageCtx.fillStyle = getTemplateTextColor(photoTemplates[i]);
+        collageCtx.fillText(photoInfoElements[i].textContent, i * width + 25, height + 50);
+        
+        // Decoration
+        collageCtx.font = '24px sans-serif';
+        collageCtx.fillText(templateDecorations[photoTemplates[i]], i * width + width - 50, height + 50);
       }
       
       // Add watermark
       collageCtx.font = '16px Inter, sans-serif';
       collageCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      collageCtx.fillText('Modern PhotoBooth • ' + new Date().toLocaleDateString(), 10, height - 20);
+      collageCtx.fillText('Modern PhotoBooth • ' + new Date().toLocaleDateString(), 10, height + templateHeight - 20);
       
       return collageCanvas.toDataURL('image/jpeg', 0.9);
     }
     
-    // Download individual photo
+    // Get template background color
+    function getTemplateColor(template) {
+      const colors = {
+        'classic': '#f8f5e7',
+        'vintage': '#e0d4b8',
+        'polaroid': '#ffffff',
+        'modern': '#2d3748'
+      };
+      return colors[template] || colors.classic;
+    }
+    
+    // Get template text color
+    function getTemplateTextColor(template) {
+      return template === 'modern' ? '#ffffff' : '#000000';
+    }
+    
+    // Download individual photo with template
     function downloadPhoto(index) {
+      // Create temporary canvas for individual styled photo
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      const templateHeight = 100;
+      
+      tempCanvas.width = width;
+      tempCanvas.height = height + templateHeight;
+      
+      // Template background
+      const templateColor = getTemplateColor(photoTemplates[index]);
+      tempCtx.fillStyle = templateColor;
+      tempCtx.fillRect(0, 0, width, height + templateHeight);
+      
+      // White border for photo
+      tempCtx.fillStyle = '#ffffff';
+      tempCtx.fillRect(20, 20, width - 40, height - 40);
+      
+      // The photo
+      const img = new Image();
+      img.src = photoURLs[index];
+      tempCtx.drawImage(img, 25, 25, width - 50, height - 50);
+      
+      // Photo info
+      tempCtx.font = '16px "Courier New", monospace';
+      tempCtx.fillStyle = getTemplateTextColor(photoTemplates[index]);
+      tempCtx.fillText(photoInfoElements[index].textContent, 25, height + 50);
+      
+      // Decoration
+      tempCtx.font = '24px sans-serif';
+      tempCtx.fillText(templateDecorations[photoTemplates[index]], width - 50, height + 50);
+      
+      // Download
       const link = document.createElement('a');
-      link.href = photoURLs[index];
-      link.download = `photo_${index + 1}.jpg`;
+      link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
+      link.download = `photo_${index + 1}_${photoTemplates[index]}.jpg`;
       link.click();
     }
     
@@ -407,6 +638,7 @@
       for (let i = 0; i < 3; i++) {
         photoElements[i].classList.add('hidden');
         placeholderElements[i].classList.remove('hidden');
+        applyTemplate(i, selectedTemplate);
       }
       
       downloadAllBtn.disabled = true;
@@ -429,9 +661,30 @@
       resetBtn.disabled = false;
     }
     
+    // Template selection
+    templateOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        // Remove active class from all
+        templateOptions.forEach(opt => opt.classList.remove('active'));
+        
+        // Add active class to selected
+        option.classList.add('active');
+        
+        // Set selected template
+        selectedTemplate = option.dataset.template;
+        
+        // Apply to empty photo containers
+        for (let i = 0; i < 3; i++) {
+          if (!photoURLs[i]) {
+            applyTemplate(i, selectedTemplate);
+          }
+        }
+      });
+    });
+    
     // Add click listeners to photos for individual download
-    photoElements.forEach((photo, index) => {
-      photo.addEventListener('click', () => {
+    photoContainers.forEach((container, index) => {
+      container.addEventListener('click', () => {
         if (photoURLs[index]) {
           downloadPhoto(index);
         }
