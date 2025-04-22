@@ -1,0 +1,1 @@
+PhotoBooth is a fun and interactive web application that lets users take snapshots using their device camera, apply filters, and save or download their favorite photos. Ideal for events, portfolios, or just having fun with friends!
